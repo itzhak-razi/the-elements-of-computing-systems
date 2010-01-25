@@ -1,0 +1,26 @@
+// This file is part of the materials accompanying the book 
+// "The Elements of Computing Systems" by Nisan and Schocken, 
+// MIT Press. Book site: www.idc.ac.il/tecs
+// File name: projects/01/Xor.hdl
+
+/**
+ *  Exclusive-or gate.  out = a xor b.
+ */
+CHIP Xor {
+  IN a, b;
+  OUT out;
+
+  PARTS:
+  /* Derived from canonical representation */
+  Not(in=a, out=notA);
+  Not(in=b, out=notB);
+  And(a=a, b=notB, out=aAndNotB);
+  And(a=notA, b=b, out=notAandB);
+  Or(a=aAndNotB, b=notAandB, out=out);
+}
+
+// Alternative implementation from http://svn2.assembla.com/svn/baraksch/nand2tet/01/Xor.hdl:
+// And( Or(a, b), Nand(a, b) )
+// It works exactly like Xor's definition states: Or(a, b) ensures at least one input is 1, while
+// Nand(a, b) ensures that at most one input is 1. Anded together, this ensures that one and only
+// one input is 1.

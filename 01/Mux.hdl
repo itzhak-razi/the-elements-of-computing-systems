@@ -1,0 +1,54 @@
+// This file is part of the materials accompanying the book 
+// "The Elements of Computing Systems" by Nisan and Schocken, 
+// MIT Press. Book site: www.idc.ac.il/tecs
+// File name: projects/01/Mux.hdl
+
+/** 
+ * Multiplexor.  If sel=0 then out = a else out = b.
+ */
+
+/* Implementation found here: http://torch.cs.dal.ca/~cbaltzer/school/2121/Labs/HDLs/Mux.hdl
+   Can also easily be derived from Boolean equation given here: http://en.wikipedia.org/wiki/Multiplexer
+     Equation: Or(And(a, Not(sel)), And(b, sel))
+     Reasoning is almost easier to follow given Boolean equation for 4-to-1 multiplexer in
+     Wikipedia article. Think: each of the Ands evaluates to 1 if the channel specified by sel
+     (a or b) is set to 1. The Or outputs 1 if whichever channel was selected was set to 1,
+     or otherwise outputs 0.
+*/
+CHIP Mux {
+  IN a, b, sel;
+  OUT out;
+
+  PARTS:
+  Not(in=sel, out=notSel);
+  And(a=a, b=notSel, out=selectA);
+  And(a=b, b=sel, out=selectB);
+  Or(a=selectA, b=selectB, out=out);
+}
+
+/* My crappy implementation from canonical form: */
+/*CHIP Mux {
+  IN a, b, sel;
+  OUT out;
+
+  PARTS:
+  Not(in=a, out=nota);
+  Not(in=b, out=notb);
+  Not(in=sel, out=notSel);
+
+  And(a=a, b=notb, out=and1p1);
+  And(a=and1p1, b=notSel, out=and1p2);
+
+  And(a=a, b=b, out=and2p1);
+  And(a=and1p1, b=notSel, out=and2p2);
+
+  And(a=nota, b=b, out=and3p1);
+  And(a=and3p1, b=sel, out=and3p2);
+
+  And(a=a, b=b, out=and4p1);
+  And(a=and4p1, b=sel, out=and4p2);
+
+  Or(a=and1p1, b=and2p1, out=or1);
+  Or(a=or1, b=and3p1, out=or2);
+  Or(a=or2, b=and4p1, out=out);
+}*/

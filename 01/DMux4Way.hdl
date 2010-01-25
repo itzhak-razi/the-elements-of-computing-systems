@@ -1,0 +1,51 @@
+// This file is part of the materials accompanying the book 
+// "The Elements of Computing Systems" by Nisan and Schocken, 
+// MIT Press. Book site: www.idc.ac.il/tecs
+// File name: projects/01/DMux4Way.hdl
+
+/**
+ * 4-way demultiplexor.  The 2-bit sel input selects the output to which 
+ * the in input will be channeled: 00 to a, 01 to b, 10 to c, 11 to d.
+ * The other outputs are set to 0.
+ */
+
+// Taken from here: http://svn2.assembla.com/svn/baraksch/nand2tet/01/DMux4Way.hdl
+CHIP DMux4Way {
+  IN in, sel[2];
+  OUT a, b, c, d;
+
+  PARTS:
+  // Note that for 4-way mux, we mux each subgroup, then choose mux the two subgroups together
+  // to choose which will form the output. For 4-way demux, we first choose which subgroup will form
+  // the input, then demux to the four outputs based on this. My lackluster implementation did the
+  // same, but in a more verbose way, since it didn't use our existing DMux gate.
+  //
+  // Alternative way to think about it: we ensure the inputs to the AB and CD subgroups will be 1
+  // *only if* the chosen output lies in that subgroup, and the input is 1.
+  DMux(in=in, sel=sel[1], a=selectAB, b=selectCD);
+  DMux(in=selectAB, sel=sel[0], a=a, b=b);
+  DMux(in=selectCD, sel=sel[0], a=c, b=d);
+}
+
+// My lackluster implementation
+/*CHIP DMux4Way {
+  IN  in, sel[2];
+  OUT a, b, c, d;
+
+  PARTS:
+  // Necessary setup for output determination
+  Not(in=sel[0], out=notSel0);
+  Not(in=sel[1], out=notSel1);
+
+  // Determine which output to send "in" to
+  And(a=notSel0, b=notSel1, out=chooseA);
+  And(a=sel[0], b=notSel1, out=chooseB);
+  And(a=notSel0, b=sel[1], out=chooseC);
+  And(a=sel[0], b=sel[1], out=chooseD);
+
+  // Set desired output to "in", all others to 0
+  And(a=chooseA, b=in, out=a);
+  And(a=chooseB, b=in, out=b);
+  And(a=chooseC, b=in, out=c);
+  And(a=chooseD, b=in, out=d);
+}*/

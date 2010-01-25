@@ -1,0 +1,16 @@
+/* Perform bitwise negation of in if sel=1. Otherwise, leave its value unchanged. */
+
+CHIP ConditionalNot16 {
+  IN in[16], sel;
+  OUT out[16];
+
+  PARTS:
+  // Alternative approach (requires creation of Xor16.hdl):
+  //   Mux16(a=false, b=true, sel=sel, out=performNot);
+  //   Xor16(a=performNot, b=in, out=out);
+  // I initially used the above approach, before switching to clearer implementation from
+  // http://svn2.assembla.com/svn/baraksch/nand2tet/02/Negator16.hdl, which also had the
+  // advantage of not requiring an Xor16 chip.
+  Not16(in=in, out=notIn);
+  Mux16(a=in, b=notIn, sel=sel, out=out);
+}

@@ -1,0 +1,19 @@
+// This file is part of the materials accompanying the book 
+// "The Elements of Computing Systems" by Nisan and Schocken, 
+// MIT Press. Book site: www.idc.ac.il/tecs
+// File name: projects/01/Or.hdl
+
+/**
+ * Or gate. out = a or b
+ */
+
+CHIP Or {
+  IN a, b;
+  OUT out;
+
+  PARTS:
+  // Reduces to Nand(Not(a), Not(b)), which logically means "only zero or one inputs are 0, not both of them"
+  Not(in=a, out=notA);
+  Not(in=b, out=notB);
+  Nand(a=notA, b=notB, out=out);
+}
