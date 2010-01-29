@@ -1,0 +1,24 @@
+// This file is part of the materials accompanying the book 
+// "The Elements of Computing Systems" by Nisan and Schocken, 
+// MIT Press. Book site: www.idc.ac.il/tecs
+// File name: projects/03/1/Bit.hdl
+
+/**
+ * 1-bit memory register.
+ * If load[t-1]=1 then out[t] = in[t-1]
+ * else out does not change (out[t] = out[t-1])
+ */
+
+CHIP Bit {
+  IN  in, load;
+  OUT out;
+
+  PARTS:
+  Mux(a=dffOut, b=in, sel=load, out=dffIn);
+  // Remember: can specify multiple output pins for part, as they may feed both an internal pin
+  // and an output pin of the chip.
+  // Since DFF's "in" is declared CLOCKED in DFF.hdl, changes to it do not take effect until
+  // the beginning of the next clock cycle. Thus, when we calculate dffIn in clock cycle t,
+  // it's not actually fed in to DFF's in until t+1.
+  DFF(in=dffIn, out=dffOut, out=out);
+}

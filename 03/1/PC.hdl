@@ -1,0 +1,39 @@
+// This file is part of the materials accompanying the book 
+// "The Elements of Computing Systems" by Nisan and Schocken, 
+// MIT Press. Book site: www.idc.ac.il/tecs
+// File name: projects/03/1/PC.hdl
+
+/**
+ * 16-bit counter with load and reset controls.
+ *
+ * If reset(t-1) then out(t) = 0
+ *    else if load(t-1) then out(t) = in(t-1)
+ *         else if inc(t-1) then out(t) = out(t-1) + 1 (integer addition)
+ *              else out(t) = out(t-1)
+ */
+
+CHIP PC {
+  IN  in[16], load, inc, reset;
+  OUT out[16];
+
+  PARTS:
+  // Output value from current invocation of chip is always based on inputs
+  // from previous invocation.
+  Register(in=newCount, out=oldCount, out=out, load=true);
+
+  // Note that my order of processing is reverse that of order specified in
+  // pseudo code above. In order to preserve behaviour of pseudo code, I choose
+  // between an unmodified value and an incremented one, between an incremented
+  // one and one loaded from "in", and finally between one loaded from "in" and
+  // a reset value.
+
+  // Increment if necessary
+  Inc16(in=oldCount, out=countPlusPlus);
+  Mux16(sel=inc, a=oldCount, b=countPlusPlus, out=incCount);
+
+  // Load from "in" if necessary
+  Mux16(sel=load, a=incCount, b=in, out=loadedCount);
+
+  // Reset if necessary
+  Mux16(sel=reset, a=loadedCount, b=false, out=newCount);
+}

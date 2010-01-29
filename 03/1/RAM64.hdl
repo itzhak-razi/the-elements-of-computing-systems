@@ -1,0 +1,32 @@
+// This file is part of the materials accompanying the book 
+// "The Elements of Computing Systems" by Nisan and Schocken, 
+// MIT Press. Book site: www.idc.ac.il/tecs
+// File name: projects/03/1/RAM64.hdl
+
+/**
+ * Memory of 64 registers, each 16-bit wide.  
+ * The chip facilitates read and write operations, as follows:
+ *     Read:  out(t) = RAM64[address(t)](t)
+ *     Write: If load(t-1) then RAM64[address(t-1)](t) = in(t-1)
+ * In words: the chip always outputs the value stored at the memory 
+ * location specified by address. If load=1, the in value is loaded 
+ * into the memory location specified by address.  This value becomes 
+ * available through the out output starting from the next time step.
+ */
+
+CHIP RAM64 {
+  IN in[16], load, address[6];
+  OUT out[16];
+
+  PARTS:
+  RAM8(in=in, out=outA, load=loadA, address=address[0..2]);
+  RAM8(in=in, out=outB, load=loadB, address=address[0..2]);
+  RAM8(in=in, out=outC, load=loadC, address=address[0..2]);
+  RAM8(in=in, out=outD, load=loadD, address=address[0..2]);
+  RAM8(in=in, out=outE, load=loadE, address=address[0..2]);
+  RAM8(in=in, out=outF, load=loadF, address=address[0..2]);
+  RAM8(in=in, out=outG, load=loadG, address=address[0..2]);
+  RAM8(in=in, out=outH, load=loadH, address=address[0..2]);
+  DMux8Way(sel=address[3..5], in=load, a=loadA, b=loadB, c=loadC, d=loadD, e=loadE, f=loadF, g=loadG, h=loadH);
+  Mux8Way16(sel=address[3..5], out=out, a=outA, b=outB, c=outC, d=outD, e=outE, f=outF, g=outG, h=outH);
+}
