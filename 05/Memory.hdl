@@ -1,0 +1,49 @@
+// This file is part of the materials accompanying the book 
+// "The Elements of Computing Systems" by Nisan and Schocken, 
+// MIT Press. Book site: www.idc.ac.il/tecs
+// File name: projects/05/Memory.hdl
+
+/**
+ * The complete address space of the computer's memory,
+ * including RAM and memory mapped I/O. 
+ * The chip facilitates read and write operations, as follows:
+ *     Read:  out(t) = Memory[address(t)](t)
+ *     Write: If load(t-1) then Memory[address(t-1)](t) = in(t-1)
+ * In words: the chip always outputs the value stored at the memory 
+ * location specified by address. If load=1, the in value is loaded 
+ * into the memory location specified by address.  This value becomes 
+ * available through the out output starting from the next time step.
+ * Address space rules:
+ * Only the upper 16K+8K+1 words of the Memory chip are used. 
+ * Access to address>0x6000 is invalid. Access to any address in 
+ * the range 0x4000–0x5FFF results in accessing the screen memory 
+ * map. Access to address 0x6000 results in accessing the keyboard 
+ * memory map. The behavior in these addresses is described in the 
+ * Screen and Keyboard chip specifications.
+ */
+
+CHIP Memory {
+  IN  in[16], load, address[15];
+  OUT out[16];
+
+  PARTS:
+  // selectRam = (0 <= address <= 0x3FFF)
+  // selectIo  = (0x4000 <= address <= 0xFFFF)
+  DMux(in=true, sel=address[14], a=selectRam, b=selectIo);
+  // selectScreen = (0x4000 <= x <= 0x5FFF)
+  // selectKeyboard = (0x6000 <= x <= 0xFFFF)
+  // Note that though access to (address > 0x6000) is invalid, behaviour in such a case is not
+  // stated by specification. If a read to such an address is attempted, I provide the keyboard's
+  // output; if a write is attempted (load=1), nothing is written anywhere.
+  DMux(in=selectIo, sel=address[13], a=selectScreen, b=selectKeyboard);
+
+  And(a=load, b=selectRam, out=loadRam);
+  And(a=load, b=selectScreen, out=loadScreen);
+
+  RAM16K(address=address[0..13], in=in, load=loadRam, out=ramOut);
+  Keyboard(out=keyboardOut);
+  Screen(address=address[0..12], in=in, load=loadScreen, out=screenOut);
+
+  Mux16(a=screenOut, b=keyboardOut, sel=selectKeyboard, out=ioOut);
+  Mux16(a=ramOut, b=ioOut, sel=selectIo, out=out);
+}
