@@ -67,6 +67,8 @@ class Assembler:
     symbol = self._parser.symbol()
     if symbol.isdigit():
       return self._build_a_command_constant(symbol)
+    # Note that no checking of the symbol is done to ensure it conforms to allowed symbol
+    # characters. It may, for example start with a digit, which is against the spec.
     else:
       return self._build_a_command_reference(symbol)
 
@@ -112,7 +114,7 @@ class Parser:
     return self._file.tell() - path.getsize(self._file.name) != 0
 
   def advance(self):
-    while True:
+    while self.has_more_commands():
       command = self._file.readline()
       # Strip comment from line if present, as well as any extraneous whitespace.
       command = command[:command.find('//')].strip()
