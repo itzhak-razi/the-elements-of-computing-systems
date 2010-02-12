@@ -109,18 +109,35 @@ class Assembler:
 class Parser:
   def __init__(self, filename):
     self._file = open(filename)
+    self.reset()
 
   def has_more_commands(self):
-    return self._file.tell() - path.getsize(self._file.name) != 0
+    return self._next_command != None
 
   def advance(self):
-    while self.has_more_commands():
+    # Store both the current command and the next one to allow us to determine whether a valid
+    # command follows the current one. (This is necessary for has_more_commands() to work.)
+   
+    # This is more reliable than determining if the current position in the file is equal to its
+    # size -- consider if file ends in blank line or comment, in which case we would think that we're
+    # not at the end of the file (and report as such from has_more_commands()), even though no more
+    # valid commands would follow.
+    self._command = self._next_command
+    self._read_next_command()
+
+  def _read_next_command(self):
+    while True:
       command = self._file.readline()
+      # EOF
+      if not command:
+        self._next_command = None
+        break
+
       # Strip comment from line if present, as well as any extraneous whitespace.
       command = command[:command.find('//')].strip()
       # Read until non-whitespace line found.
       if command:
-        self._command = command
+        self._next_command = command
         break
 
   def command_type(self):
@@ -148,6 +165,8 @@ class Parser:
 
   def reset(self):
     self._file.seek(0)
+    # Must read "next" command to allow has_more_commands() to work before call to advance().
+    self._read_next_command()
  
   def _parse_mnemonic(self, kind):
     components = self._split_c_command()
